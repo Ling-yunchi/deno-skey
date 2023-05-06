@@ -25,11 +25,11 @@ export default async (req: Request) => {
 
   const user = await getUser(username);
 
-  if (!user.value) {
+  if (!user) {
     return Response.json({ error: "user not exist" }, { status: 400 });
   }
 
-  if (password !== user.value.password) {
+  if (password !== user.password) {
     return Response.json({ error: "password incorrect" }, { status: 400 });
   }
 

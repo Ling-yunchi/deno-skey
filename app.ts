@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.182.0/http/server.ts";
 import login from "./app/login.ts";
 import action from "./app/action.ts";
 import captcha from "./app/captcha.ts";
+import renew from "./app/renew.ts";
 
 await serve(
   async (request) => {
@@ -16,6 +17,9 @@ await serve(
     }
     if (url.pathname === "/captcha") {
       return await captcha(request);
+    }
+    if (url.pathname === "/renew") {
+      return await renew(request);
     }
 
     return Response.json({ error: "Page not found" }, { status: 404 });

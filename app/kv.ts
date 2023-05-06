@@ -5,7 +5,8 @@ type UserValue = {
 };
 
 export async function getUser(username: string) {
-  return await kv.get<UserValue>(["user", username]);
+  const result = await kv.get<UserValue>(["user", username]);
+  return result.value;
 }
 
 type SkeyValue = {
