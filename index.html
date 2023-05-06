@@ -1,0 +1,165 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>S/Key Example</title>
+
+    <style>
+      #captcha-image {
+        width: 120px;
+        height: 48px;
+        padding: 0 20px;
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+        border: 1px solid black;
+      }
+
+      #form {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      #actions {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="form">
+      <input type="text" id="username" placeholder="用户名" />
+      <input type="password" id="password" placeholder="密码" />
+      <div id="captcha-image"></div>
+      <input type="text" id="captcha" placeholder="验证码" />
+      <input type="text" id="challenge" hidden />
+      <button id="submit">登录</button>
+    </div>
+
+    <div id="actions">
+      <button id="action">执行动作</button>
+    </div>
+
+    <div id="skeys"></div>
+
+    <script type="module">
+      import { getSkeys } from "./common.ts";
+
+      const usernameInput = document.getElementById("username");
+      const passwordInput = document.getElementById("password");
+      const captchaInput = document.getElementById("captcha");
+      const challengeInput = document.getElementById("challenge");
+      const captchaImageDiv = document.getElementById("captcha-image");
+
+      async function resetCaptcha() {
+        const response = await fetch("/api/captcha");
+        const { captcha, image } = await response.json();
+        challengeInput.value = captcha;
+        captchaInput.value = "";
+        const imageUrl = "data:image/svg+xml;base64," + btoa(image);
+        captchaImageDiv.style.backgroundImage = `url(${imageUrl})`;
+      }
+
+      await resetCaptcha();
+      captchaImageDiv.addEventListener("click", () => {
+        resetCaptcha();
+      });
+
+      let passwd = "";
+      let skeys = [];
+
+      function updateSkeys() {
+        const elem = document.getElementById("skeys");
+        while (elem.firstChild) {
+          elem.removeChild(elem.firstChild);
+        }
+        const keys = [...skeys].reverse();
+
+        for (const key of keys) {
+          const div = document.createElement("div");
+          div.textContent = key;
+          elem.appendChild(div);
+        }
+      }
+
+      async function addSkeys(seed, iteration) {
+        const keys = await getSkeys(passwd, seed, iteration);
+        keys.pop(); // drop last key
+        skeys = [...keys, ...skeys];
+        updateSkeys();
+      }
+
+      function getSkeyHeader(skey) {
+        const headers = new Headers();
+        headers.set("Authorization", `Basic ${skey}`);
+        return headers;
+      }
+
+      async function renewSkeys(skey) {
+        const headers = getSkeyHeader(skey);
+        headers.set("Content-Type", "application/json");
+        const response = await fetch("/api/renew", { method: "POST", headers });
+        const json = await response.json();
+
+        if (response.status === 200) {
+          await addSkeys(json.seed, json.iteration);
+        } else {
+          alert(json.error);
+        }
+      }
+
+      async function getSkey() {
+        const key = skeys.pop();
+
+        if (!skeys.length) {
+          await renewSkeys(key);
+          return await getSkey();
+        }
+
+        updateSkeys();
+        return key;
+      }
+
+      const submitButton = document.getElementById("submit");
+      submitButton.addEventListener("click", async () => {
+        const username = usernameInput.value;
+        const password = passwordInput.value;
+        const captcha = captchaInput.value;
+        const challenge = challengeInput.value;
+
+        const response = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password, captcha, challenge }),
+        });
+        const json = await response.json();
+
+        if (response.status === 200) {
+          passwd = password;
+          await addSkeys(json.seed, json.iteration);
+
+          document.getElementById("form").style.display = "none";
+          document.getElementById("actions").style.display = "block";
+        } else {
+          alert(json.error);
+          resetCaptcha();
+        }
+      });
+
+      const actionButton = document.getElementById("action");
+      actionButton.addEventListener("click", async () => {
+        const skey = await getSkey();
+        const headers = getSkeyHeader(skey);
+        const response = await fetch("/api/action", {
+          method: "POST",
+          headers,
+        });
+        const json = await response.json();
+        if (response.status !== 200) {
+          alert(json.error);
+        }
+      });
+    </script>
+  </body>
+</html>

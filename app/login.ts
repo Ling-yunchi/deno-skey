@@ -8,8 +8,8 @@ export default async (req: Request) => {
   if (
     typeof data.username !== "string" ||
     typeof data.password !== "string" ||
-    typeof data.captcha !== "string" ||
-    typeof data.text !== "string"
+    typeof data.challenge !== "string" ||
+    typeof data.captcha !== "string"
   ) {
     return Response.json({ error: "missing params" }, { status: 400 });
   }
@@ -17,9 +17,9 @@ export default async (req: Request) => {
   const username = data.username as string;
   const password = data.password as string;
   const captcha = data.captcha as string;
-  const text = data.text as string;
+  const challenge = data.challenge as string;
 
-  if (!(await verifyCaptcha(captcha, text))) {
+  if (!(await verifyCaptcha(challenge, captcha))) {
     return Response.json({ error: "Failed Captcha" }, { status: 403 });
   }
 

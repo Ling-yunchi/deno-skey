@@ -6,21 +6,26 @@ import captcha from "./app/captcha.ts";
 import renew from "./app/renew.ts";
 
 await serve(
-  async (request) => {
-    const url = new URL(request.url);
+  async (req) => {
+    const url = new URL(req.url);
+    // maybe proxy
+    const pathname = url.pathname.startsWith("/api")
+      ? url.pathname.slice(4)
+      : url.pathname;
 
-    if (url.pathname === "/login") {
-      return await login(request);
+    if (pathname === "/login") {
+      return await login(req);
     }
-    if (url.pathname === "/action") {
-      return await action(request);
+    if (pathname === "/action") {
+      return await action(req);
     }
-    if (url.pathname === "/captcha") {
-      return await captcha(request);
+    if (pathname === "/captcha") {
+      return await captcha(req);
     }
-    if (url.pathname === "/renew") {
-      return await renew(request);
+    if (pathname === "/renew") {
+      return await renew(req);
     }
+    console.log(req.url);
 
     return Response.json({ error: "Page not found" }, { status: 404 });
   },

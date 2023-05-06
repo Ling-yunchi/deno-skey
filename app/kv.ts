@@ -1,5 +1,8 @@
 const kv = await Deno.openKv();
 
+// mock data
+await kv.set(["user", "admin"], { password: "admin123" });
+
 type UserValue = {
   password: string;
 };

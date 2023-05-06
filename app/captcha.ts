@@ -1,11 +1,19 @@
 import { deleteCaptcha, getCaptchaOnce, setCaptcha } from "./kv.ts";
 
-import { makeCaptcha } from "https://deno.land/x/svg_captcha@v1.1.0/mod.ts";
+import {
+  makeCaptcha,
+  isValid,
+} from "https://deno.land/x/svg_captcha@v1.1.0/mod.ts";
 
 // start a new challenge
 export default async (_req: Request) => {
   const uuid = crypto.randomUUID();
-  const { text, svgContext: image } = makeCaptcha();
+  const { text, svgContext: image } = makeCaptcha({
+    textOption: {
+      randomColor: true,
+      rotate: 30,
+    },
+  });
 
   await setCaptcha(uuid, { text });
 
@@ -17,8 +25,8 @@ export default async (_req: Request) => {
   return Response.json({ captcha: uuid, image });
 };
 
-export async function verifyCaptcha(uuid: string, text: string) {
+export async function verifyCaptcha(uuid: string, input: string) {
   const captcha = await getCaptchaOnce(uuid);
 
-  return (captcha && text === captcha.text) || false;
+  return (captcha && isValid(input, captcha.text)) || false;
 }
