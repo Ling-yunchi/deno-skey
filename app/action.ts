@@ -1,5 +1,6 @@
 import { saltyHash } from "../common.ts";
 import { getSkeyOnce, setSkey } from "./kv.ts";
+import { log } from "./log.ts";
 
 export default async (req: Request) => {
   const auth = req.headers.get("Authorization");
@@ -23,7 +24,7 @@ export default async (req: Request) => {
   await setSkey(skey, value);
 
   // do something here
-  console.log(`user: ${value.username} performs an action`);
+  log(`user: ${value.username} performs an action`);
 
   return Response.json({ ok: true });
 };

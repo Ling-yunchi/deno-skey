@@ -1,6 +1,7 @@
 import { buffer2hex, getKthSkey } from "../common.ts";
 import { verifyCaptcha } from "./captcha.ts";
 import { getUser, setSkey } from "./kv.ts";
+import { log } from "./log.ts";
 
 export default async (req: Request) => {
   const data = await req.json();
@@ -36,6 +37,7 @@ export default async (req: Request) => {
   const iteration = 10;
   const { seed, skey } = await generateSKey(password, iteration);
   await setSkey(skey, { username });
+  log(`user: ${username} logged in`);
 
   return Response.json({ ok: true, seed, iteration });
 };

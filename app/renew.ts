@@ -1,5 +1,6 @@
 import { saltyHash } from "../common.ts";
 import { getSkeyOnce, getUser, setSkey } from "./kv.ts";
+import { log } from "./log.ts";
 import { generateSKey } from "./login.ts";
 
 export default async (req: Request) => {
@@ -29,7 +30,7 @@ export default async (req: Request) => {
   await setSkey(skey, value);
 
   // do something here
-  console.log(`user: ${value.username} renews its skey`);
+  log(`user: ${value.username} renews its skey`);
 
   return Response.json({ ok: true, seed, iteration });
 };
