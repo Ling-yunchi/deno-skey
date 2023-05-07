@@ -6,6 +6,7 @@ export default async (req: Request) => {
   const auth = req.headers.get("Authorization");
 
   if (!auth || !auth.startsWith("Basic ")) {
+    log("400: no authorization header");
     return Response.json(
       { error: "Please provide Authorization header starts with Basic" },
       { status: 400 }
@@ -17,6 +18,7 @@ export default async (req: Request) => {
   const value = await getSkeyOnce(okey);
 
   if (!value) {
+    log(`403: invalid authorization header: ${auth}`);
     return Response.json({ error: "Failed to authenticate" }, { status: 403 });
   }
 
@@ -24,7 +26,12 @@ export default async (req: Request) => {
   await setSkey(skey, value);
 
   // do something here
-  log(`user: ${value.username} performs an action`);
+  log(
+    `200: user ${value.username} performs an action; skey ${okey.slice(
+      0,
+      8
+    )} => ${skey.slice(0, 8)}`
+  );
 
   return Response.json({ ok: true });
 };

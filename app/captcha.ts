@@ -1,4 +1,5 @@
 import { deleteCaptcha, getCaptchaOnce, setCaptcha } from "./kv.ts";
+import { log } from "./log.ts";
 
 import {
   makeCaptcha,
@@ -22,6 +23,7 @@ export default async (_req: Request) => {
     deleteCaptcha(uuid);
   }, 60 * 1000);
 
+  log(`200: new captcha ${uuid}`);
   return Response.json({ captcha: uuid, image });
 };
 
