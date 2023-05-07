@@ -1,3 +1,3 @@
-run `npx vite dev` and `deno task server` parallelly.
+run  `deno task server`.
 
 requires deno 1.33+
