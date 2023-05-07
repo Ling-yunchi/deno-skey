@@ -1,4 +1,4 @@
-const fd = await Deno.open("actions.log", { append: true });
+const fd = await Deno.open("actions.log", { append: true, create: true });
 
 export function log(msg: string) {
   const text = `${Date.now()}: ${msg}\n`;

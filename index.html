@@ -44,7 +44,7 @@
     <div id="skeys"></div>
 
     <script type="module">
-      import { getSkeys } from "./common.ts";
+      import { getSkeys, saltyHash } from "./common.ts";
 
       const usernameInput = document.getElementById("username");
       const passwordInput = document.getElementById("password");
@@ -85,7 +85,6 @@
 
       async function addSkeys(seed, iteration) {
         const keys = await getSkeys(passwd, seed, iteration);
-        keys.pop(); // drop last key
         skeys = [...keys, ...skeys];
         updateSkeys();
       }
@@ -124,7 +123,7 @@
       const submitButton = document.getElementById("submit");
       submitButton.addEventListener("click", async () => {
         const username = usernameInput.value;
-        const password = passwordInput.value;
+        const password = await saltyHash(passwordInput.value);
         const captcha = captchaInput.value;
         const challenge = challengeInput.value;
 

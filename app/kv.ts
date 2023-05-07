@@ -1,7 +1,9 @@
+import { saltyHash } from "../common.ts";
+
 const kv = await Deno.openKv();
 
 // mock data
-await kv.set(["user", "admin"], { password: "admin123" });
+await kv.set(["user", "admin"], { password: await saltyHash("admin123") });
 
 type UserValue = {
   password: string;
