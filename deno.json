@@ -1,5 +1,5 @@
 {
   "tasks": {
-    "server": "deno run --allow-net --allow-write --unstable app.ts"
+    "server": "deno run --allow-net --allow-read --allow-write --allow-env --unstable app.ts"
   }
 }

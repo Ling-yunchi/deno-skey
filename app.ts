@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.182.0/http/server.ts";
+import { transpile } from "https://deno.land/x/emit@0.22.0/mod.ts";
 
 import login from "./app/login.ts";
 import action from "./app/action.ts";
@@ -24,6 +25,25 @@ await serve(
     }
     if (pathname === "/renew") {
       return await renew(req);
+    }
+    if (pathname === "/") {
+      const html = await Deno.readTextFile("./index.html");
+      return new Response(html, {
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+        },
+      });
+    }
+    if (pathname === "/common.ts") {
+      const file_url = new URL("./common.ts", import.meta.url);
+      // deno magic!
+      const result = await transpile(file_url);
+      const code = result[file_url.href];
+      return new Response(code, {
+        headers: {
+          "content-type": "application/javascript; charset=utf-8",
+        },
+      });
     }
     console.log(req.url);
 
